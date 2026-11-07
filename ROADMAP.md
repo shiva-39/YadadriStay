@@ -1,0 +1,44 @@
+# Yadadri Stay - Automated Execution Checklist
+
+- [x] Phase 1: Initialize Git repo and project folders (backend, admin-web, owner-web, android-app)
+- [x] Phase 2: Node.js + MongoDB backend setup
+  - [x] Schemas (Users, Lodges, Rooms, Inventory, Bookings, Payments)
+  - [x] JWT auth and role middleware
+  - [x] Date-wise atomic room inventory logic
+  - [x] REST API endpoints for all modules
+  - [x] Seed script with test temple lodges
+- [x] Phase 3: Lodge Owner Web Dashboard (React + Vite + Tailwind)
+  - [x] Auth & Property profile
+  - [x] Room category & inventory management
+  - [x] Offline booking entry
+- [x] Phase 4: Super Admin Web Dashboard (React + Vite + Tailwind)
+  - [x] Lodge approval / rejection (LodgeApprovals.jsx)
+  - [x] Manual UPI transaction verification (PaymentVerification.jsx)
+  - [x] User management (Users.jsx)
+  - [x] Platform settings (Settings.jsx)
+- [x] Phase 5: Android Application (Kotlin + Jetpack Compose)
+  - [x] MVVM architecture + Retrofit API client
+  - [x] Home screen with temple theme & date filters
+  - [x] Room selection & checkout with UPI QR display
+  - [x] Payment screenshot upload & My Bookings screen
+  - [x] Profile, Auth, Settings screens
+- [x] Phase 6: Compile Android Debug APK via Gradle (code compilation complete)
+  - [x] Fixed Kotlin version compatibility (1.9.24 + Compose Compiler 1.5.14)
+  - [x] Resolved all KAPT annotation processing errors (@Serializable vs @Json, @ApplicationContext)
+  - [x] Fixed javax.inject vs jakarta.inject dependencies
+  - [x] Added missing Material3 and SplashScreen dependencies
+  - [x] Created missing XML resource files (data_extraction_rules, backup_rules, adaptive icons)
+  - [x] Updated minSdk from 24 to 26 for adaptive icons
+  - [x] Fixed all source code compilation errors across all screens:
+    - AuthScreen, BookingScreen, HomeScreen, MyBookingsScreen
+    - FavoritesScreen, LodgeDetailScreen, ProfileScreen, ProfileEditScreen
+    - SettingsScreen, MainActivity, LodgeCard component
+  - [x] Fixed StateFlow delegate usage (collectAsState) in all ViewModels and screens
+  - [x] Replaced Scaffold with Surface for Compose 1.5+ compatibility
+  - [x] Fixed FilledTextField → OutlinedTextField for Material3
+  - [x] Added missing imports (collectAsState, getValue, setValue, TextAlign, etc.)
+  - [x] Fixed EnumEntries → enumValues() for BookingTab
+  - [x] Fixed BookingStatus chip to match actual enum values
+  - [x] Fixed navigation routes to use consistent naming (lodge_detail vs lodge)
+  - [x] Project moved from C: to E: drive to resolve disk space issues
+  - [x] APK build verification - DEBUG APK generated successfully at app/build/outputs/apk/debug/app-debug.apk (22.8 MB)

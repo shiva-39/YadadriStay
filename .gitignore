@@ -1,0 +1,48 @@
+# Android
+*.apk
+*.ap_
+*.aab
+
+# Gradle
+.gradle/
+build/
+*/build/
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Local configuration
+local.properties
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android SDK (should not be in repo)
+android-app/android-sdk/
+
+# Firebase
+google-services.json
+
+# Node modules (backend)
+backend/node_modules/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear

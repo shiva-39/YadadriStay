@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Temple Theme Colors (Saffron/Orange theme) -->
+    <color name="primary_50">#FFF7EE</color>
+    <color name="primary_100">#FFEDD6</color>
+    <color name="primary_200">#FFD8AD</color>
+    <color name="primary_300">#FFBC7A</color>
+    <color name="primary_400">#FF9743</color>
+    <color name="primary_500">#ED7B1B</color>
+    <color name="primary_600">#E05D0F</color>
+    <color name="primary_700">#B8420D</color>
+    <color name="primary_800">#933511</color>
+    <color name="primary_900">#772D10</color>
+    <color name="primary_950">#3F1206</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary_50">#FDF8F3</color>
+    <color name="secondary_100">#F9EFE3</color>
+    <color name="secondary_200">#F2DBC5</color>
+    <color name="secondary_300">#E8C19A</color>
+    <color name="secondary_400">#DDA26B</color>
+    <color name="secondary_500">#D18644</color>
+    <color name="secondary_600">#BD6D33</color>
+    <color name="secondary_700">#98552B</color>
+    <color name="secondary_800">#794528</color>
+    <color name="secondary_900">#613A24</color>
+
+    <!-- Status Colors -->
+    <color name="success_50">#DCFCE7</color>
+    <color name="success_100">#BBF7D0</color>
+    <color name="success_500">#22C55E</color>
+    <color name="success_600">#16A34A</color>
+    <color name="success_700">#15803D</color>
+
+    <color name="warning_50">#FEF9C3</color>
+    <color name="warning_100">#FEF3C7</color>
+    <color name="warning_500">#F59E0B</color>
+    <color name="warning_600">#D97706</color>
+    <color name="warning_700">#B45309</color>
+
+    <color name="error_50">#FEF2F2</color>
+    <color name="error_100">#FEE2E2</color>
+    <color name="error_500">#EF4444</color>
+    <color name="error_600">#DC2626</color>
+    <color name="error_700">#B91C1C</color>
+
+    <color name="info_50">#EFF6FF</color>
+    <color name="info_100">#DBEAFE</color>
+    <color name="info_500">#3B82F6</color>
+    <color name="info_600">#2563EB</color>
+    <color name="info_700">#1D4ED8</color>
+
+    <!-- Neutral Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="gray_50">#F9FAFB</color>
+    <color name="gray_100">#F3F4F6</color>
+    <color name="gray_200">#E5E7EB</color>
+    <color name="gray_300">#D1D5DB</color>
+    <color name="gray_400">#9CA3AF</color>
+    <color name="gray_500">#6B7280</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="gray_700">#374151</color>
+    <color name="gray_800">#1F2937</color>
+    <color name="gray_900">#111827</color>
+    <color name="gray_950">#030712</color>
+
+    <!-- Surface Colors -->
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F9FAFB</color>
+    <color name="surface_container">#F3F4F6</color>
+    <color name="surface_container_high">#E5E7EB</color>
+
+    <!-- On Colors -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#3F1206</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_surface">#111827</color>
+    <color name="on_surface_variant">#374151</color>
+    <color name="on_background">#111827</color>
+    <color name="on_error">#FFFFFF</color>
+
+    <!-- Outline -->
+    <color name="outline">#D1D5DB</color>
+    <color name="outline_variant">#E5E7EB</color>
+
+    <!-- Shadow -->
+    <color name="shadow">#000000</color>
+    <color name="scrim">#000000</color>
+
+    <!-- Temple Specific -->
+    <color name="temple_gold">#FFD700</color>
+    <color name="temple_saffron">#FF9933</color>
+    <color name="temple_maroon">#800000</color>
+    <color name="temple_cream">#FFF8E7</color>
+
+    <!-- Status Bar / Navigation -->
+    <color name="status_bar_color">@color/primary_700</color>
+    <color name="navigation_bar_color">@color/white</color>
+</resources>

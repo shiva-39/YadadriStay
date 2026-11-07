@@ -1,0 +1,299 @@
+﻿<resources>
+    <string name="app_name">Yadadri Stay</string>
+    <string name="app_tagline">Your Spiritual Stay Companion</string>
+    <string name="tagline">Your Spiritual Stay Companion</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Discover Peaceful Stays</string>
+    <string name="onboarding_desc_1">Find serene accommodation near Sri Lakshmi Narasimha Swamy Temple with ease</string>
+    <string name="onboarding_title_2">Easy Booking</string>
+    <string name="onboarding_desc_2">Book your stay in minutes with our simple and secure booking process</string>
+    <string name="onboarding_title_3">Multiple Payment Options</string>
+    <string name="onboarding_desc_3">Pay via UPI, cards, net banking, or wallet - choose what works for you</string>
+    <string name="get_started">Get Started</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+
+    <!-- Auth -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_to_continue">Sign in to continue your spiritual journey</string>
+    <string name="phone_or_email">Phone or Email</string>
+    <string name="enter_phone_or_email">Enter your phone or email</string>
+    <string name="password">Password</string>
+    <string name="enter_password">Enter your password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="login">Login</string>
+    <string name="or">Or</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="register">Register</string>
+    <string name="create_account">Create Account</string>
+    <string name="join_yadadri_stay">Join Yadadri Stay community</string>
+    <string name="full_name">Full Name</string>
+    <string name="enter_full_name">Enter your full name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+
+    <!-- Home Screen -->
+    <string name="welcome_title">Welcome to Yadadri Stay</string>
+    <string name="welcome_subtitle">Find peaceful accommodation near Sri Lakshmi Narasimha Swamy Temple</string>
+    <string name="where_to">Where to?</string>
+    <string name="yadadri_telangana">Yadadri, Telangana</string>
+    <string name="check_in">Check-in</string>
+    <string name="check_out">Check-out</string>
+    <string name="guests">Guests</string>
+    <string name="search">Search</string>
+    <string name="nearby_lodges">Nearby Lodges</string>
+    <string name="view_all">View All</string>
+    <string name="no_lodges_found">No Lodges Found</string>
+    <string name="no_lodges_nearby">No lodges available near your location</string>
+    <string name="search_lodges">Search Lodges</string>
+    <string name="popular_categories">Popular Categories</string>
+    <string name="filter_button">Filters</string>
+
+    <!-- Search -->
+    <string name="filters">Filters</string>
+    <string name="clear_all">Clear All</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="price_range">Price Range</string>
+    <string name="rating">Rating</string>
+    <string name="amenities">Amenities</string>
+    <string name="property_type">Property Type</string>
+    <string name="and_above">and above</string>
+    <string name="no_results">No Results Found</string>
+    <string name="try_adjusting_filters">Try adjusting your filters</string>
+    <string name="clear_filters">Clear Filters</string>
+    <string name="results_found">%1$d results found</string>
+
+    <!-- Lodge Detail -->
+    <string name="about_this_lodge">About This Lodge</string>
+    <string name="guest_reviews">Guest Reviews</string>
+    <string name="view_all_reviews">View All Reviews</string>
+    <string name="location_contact">Location &amp; Contact</string>
+    <string name="view_on_map">View on Map</string>
+    <string name="call">Call</string>
+    <string name="email">Email</string>
+    <string name="website">Website</string>
+    <string name="starting_from">Starting from</string>
+    <string name="book_now">Book Now</string>
+    <string name="failed_to_load_lodge">Failed to load lodge details</string>
+
+    <!-- Room Selection -->
+    <string name="select_room">Select Room</string>
+    <string name="capacity">Capacity</string>
+    <string name="bed_type">Bed Type</string>
+    <string name="included">Included</string>
+    <string name="not_available">Not Available</string>
+    <string name="available_rooms">%1$d Available Rooms</string>
+    <string name="no_rooms_available">No Rooms Available</string>
+    <string name="try_different_dates">Try different dates or room type</string>
+    <string name="room_number">Room %1$d</string>
+    <string name="selected_rooms">%1$d rooms selected</string>
+    <string name="nights">nights</string>
+    <string name="rooms">rooms</string>
+    <string name="total_price">Total Price</string>
+    <string name="continue_to_booking">Continue to Booking</string>
+    <string name="failed_to_load_rooms">Failed to load available rooms</string>
+
+    <!-- Booking -->
+    <string name="booking_details">Booking Details</string>
+    <string name="guest_details">Guest Details</string>
+    <string name="add_guest">Add Guest</string>
+    <string name="special_requests">Special Requests</string>
+    <string name="special_requests_hint">Any special requests for your stay?</string>
+    <string name="terms_agreement">I agree to the Terms of Service and Privacy Policy</string>
+    <string name="pay_now">Pay Now</string>
+    <string name="proceed_to_payment">Proceed to Payment</string>
+    <string name="price_breakdown">Price Breakdown</string>
+    <string name="room_charges">Room Charges (%1$d nights)</string>
+    <string name="taxes_fees">Taxes &amp; Fees</string>
+    <string name="discount">Discount</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_phone">Enter phone</string>
+    <string name="enter_id_proof">Enter ID Proof (Aadhaar/PAN)</string>
+    <string name="primary_guest">Primary Guest</string>
+    <string name="guest_number">Guest %1$d</string>
+    <string name="failed_to_load_booking_details">Failed to load booking details</string>
+
+    <!-- Payment -->
+    <string name="payment">Payment</string>
+    <string name="amount_to_pay">Amount to Pay</string>
+    <string name="inclusive_of_taxes">Inclusive of all taxes</string>
+    <string name="select_payment_method">Select Payment Method</string>
+    <string name="upi_payment">UPI Payment</string>
+    <string name="pay_via_upi_apps">Pay via GPay, PhonePe, Paytm, etc.</string>
+    <string name="card_payment">Card Payment</string>
+    <string name="credit_debit_card">Credit/Debit Card</string>
+    <string name="net_banking">Net Banking</string>
+    <string name="direct_bank_transfer">Direct Bank Transfer</string>
+    <string name="wallet">Wallet</string>
+    <string name="paytm_phonepe_gpay">Paytm, PhonePe, GPay</string>
+    <string name="scan_to_pay">Scan QR Code to Pay</string>
+    <string name="scan_with_upi_app">Scan with any UPI App</string>
+    <string name="or_pay_with">Or pay with</string>
+    <string name="copy_upi_id">Copy UPI ID</string>
+    <string name="card_details">Card Details</string>
+    <string name="card_number">Card Number</string>
+    <string name="expiry_date">Expiry Date</string>
+    <string name="cvv">CVV</string>
+    <string name="card_holder_name">Card Holder Name</string>
+    <string name="enter_card_holder_name">Enter name as on card</string>
+    <string name="save_card">Save card for future bookings</string>
+    <string name="secure_payment">Secure Payment</string>
+    <string name="payment_security_details">Your payment is encrypted and secure. We don\'t store card details.</string>
+    <string name="processing">Processing...</string>
+    <string name="failed_to_load_payment">Failed to load payment options</string>
+
+    <!-- Booking Confirmation -->
+    <string name="booking_confirmed_title">Booking Confirmed!</string>
+    <string name="booking_confirmed_message">Your spiritual stay has been booked successfully</string>
+    <string name="booking_reference">Booking Reference</string>
+    <string name="save_this_reference">Save this reference for check-in</string>
+    <string name="next_steps">Next Steps</string>
+    <string name="receive_confirmation">Receive Confirmation</string>
+    <string name="confirmation_email_sms">Confirmation sent via email and SMS</string>
+    <string name="show_booking_reference">Show booking reference at check-in</string>
+    <string name="enjoy_stay">Enjoy Your Stay</string>
+    <string name="contact_host_if_needed">Contact host if you need anything</string>
+    <string name="view_booking_details">View Booking Details</string>
+    <string name="go_to_home">Go to Home</string>
+    <string name="failed_to_load_booking_confirmation">Failed to load booking confirmation</string>
+
+    <!-- My Bookings -->
+    <string name="my_bookings">My Bookings</string>
+    <string name="no_bookings_found">No Bookings Found</string>
+    <string name="no_bookings_message">You haven\'t made any bookings yet</string>
+    <string name="browse_lodges">Browse Lodges</string>
+    <string name="write_review">Write Review</string>
+    <string name="view_manage_bookings">View &amp; Manage Bookings</string>
+
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="member_since">Member since %1$s</string>
+    <string name="stays">Stays</string>
+    <string name="favorites">Favorites</string>
+    <string name="profile_reviews">Reviews</string>
+    <string name="avg_rating">Avg Rating</string>
+    <string name="profile_transport">Transport</string>
+    <string name="profile_book_transport">Book Transport</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="terms_privacy">Terms &amp; Privacy</string>
+    <string name="read_terms_privacy">Read our terms and privacy policy</string>
+    <string name="contact_us">Contact our support team</string>
+    <string name="my_favorites">My Favorites</string>
+    <string name="saved_lodges">Saved Lodges</string>
+    <string name="reviews_you_wrote">Reviews You Wrote</string>
+    <string name="app_preferences">App Preferences</string>
+    <string name="logout">Logout</string>
+    <string name="failed_to_load_profile">Failed to load profile</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="account">Account</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="update_personal_info">Update personal information</string>
+    <string name="change_password">Change Password</string>
+    <string name="update_password">Update your password</string>
+    <string name="language">Language</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="permanently_delete">Permanently delete your account</string>
+    <string name="notifications">Notifications</string>
+    <string name="push_notifications">Push Notifications</string>
+    <string name="receive_booking_updates">Receive booking updates and offers</string>
+    <string name="email_notifications">Email Notifications</string>
+    <string name="receive_email_updates">Receive updates via email</string>
+    <string name="sms_notifications">SMS Notifications</string>
+    <string name="receive_sms_updates">Receive updates via SMS</string>
+    <string name="notification_preferences">Notification Preferences</string>
+    <string name="customize_notifications">Customize what notifications you receive</string>
+    <string name="appearance">Appearance</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="system_default">System Default</string>
+    <string name="font_size">Font Size</string>
+    <string name="data_privacy">Data &amp; Privacy</string>
+    <string name="download_data">Download My Data</string>
+    <string name="request_data_copy">Request a copy of your data</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="read_privacy_policy">Read our privacy policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="read_terms">Read our terms of service</string>
+    <string name="about">About</string>
+    <string name="app_version">App Version</string>
+    <string name="rate_app">Rate App</string>
+    <string name="rate_on_play_store">Rate us on Play Store</string>
+    <string name="share_app">Share App</string>
+    <string name="invite_friends">Invite friends to Yadadri Stay</string>
+    <string name="help_feedback">Help &amp; Feedback</string>
+    <string name="send_feedback">Send us your feedback</string>
+
+    <!-- Transport -->
+    <string name="transport">Transport</string>
+    <string name="book_transport">Book Transport</string>
+    <string name="book_transport_subtitle">Book a ride to/from the temple</string>
+    <string name="cab">Cab</string>
+    <string name="bus">Bus</string>
+    <string name="auto">Auto</string>
+    <string name="bike">Bike</string>
+    <string name="my_requests">My Requests</string>
+    <string name="no_transport_requests">No Transport Requests</string>
+    <string name="no_transport_message">You haven\'t booked any transport yet</string>
+    <string name="pickup">Pickup</string>
+    <string name="dropoff">Drop-off</string>
+    <string name="track_driver">Track Driver</string>
+    <string name="cancel_ride">Cancel Ride</string>
+    <string name="view_receipt">View Receipt</string>
+    <string name="ride_again">Ride Again</string>
+
+    <!-- Reviews -->
+    <string name="reviews">Reviews</string>
+    <string name="how_was_your_stay">How was your stay?</string>
+    <string name="rate_categories">Rate Categories</string>
+    <string name="write_your_review">Write Your Review</string>
+    <string name="share_experience">Share your experience...</string>
+    <string name="add_photos">Add Photos</string>
+    <string name="add_photo">Add Photo</string>
+    <string name="no_photos_added">No photos added yet</string>
+    <string name="submit_review">Submit Review</string>
+    <string name="no_reviews_yet">No Reviews Yet</string>
+    <string name="be_first_to_review">Be the first to review this lodge</string>
+    <string name="sort_by">Sort By</string>
+    <string name="newest">Newest</string>
+    <string name="oldest">Oldest</string>
+    <string name="highest_rating">Highest Rated</string>
+    <string name="lowest_rating">Lowest Rated</string>
+    <string name="most_helpful">Most Helpful</string>
+    <string name="based_on_reviews">Based on %1$d reviews</string>
+    <string name="response_from_lodge">Response from Lodge</string>
+    <string name="helpful">Helpful (%1$d)</string>
+    <string name="load_more">Load More</string>
+    <string name="failed_to_load_booking_for_review">Failed to load booking for review</string>
+
+    <!-- Errors &amp; Messages -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="loading">Loading...</string>
+    <string name="no_internet">No internet connection</string>
+    <string name="retry">Retry</string>
+    <string name="success">Success</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="done">Done</string>
+
+    <!-- Filters -->
+    <string name="amenities_filter">Amenities</string>
+    <string name="room_type_filter">Room Type</string>
+    <string name="sort_price_low_high">Price: Low to High</string>
+    <string name="sort_price_high_low">Price: High to Low</string>
+    <string name="sort_rating">Highest Rated</string>
+    <string name="sort_distance">Nearest to Temple</string>
+
+    <!-- Common -->
+    <string name="rupee_symbol">&#8377;</string>
+    <string name="per_night">per night</string>
+    <string name="guests_count">%1$d guests</string>
+    <string name="rooms_count">%1$d rooms</string>
+</resources>
