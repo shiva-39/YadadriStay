@@ -83,7 +83,7 @@ data class RoomCategoryDetail(
     val totalRooms: Int, val availableRooms: Int, val amenities: List<String>, val images: List<String>,
     val bedType: String, val roomSize: Int?
 ) {
-    companion object { fun fromApi(r: RoomCategory, available: Int = 0): RoomCategoryDetail = RoomCategoryDetail(r.id, r.name, r.description, r.basePrice, r.maxOccupancy, r.totalRooms, available, r.amenities, r.images, r.bedType, r.roomSize) }
+    companion object { fun fromApi(r: RoomCategory, available: Int = 0): RoomCategoryDetail = RoomCategoryDetail(r.id, r.name, r.description, r.basePrice, r.maxOccupancy, r.totalRooms, available, r.effectiveAmenities, r.images.map { it.url }, r.bedType, r.roomSize) }
 }
 
 data class BookingDetail(

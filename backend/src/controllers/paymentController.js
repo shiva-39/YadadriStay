@@ -9,15 +9,25 @@ const RoomInventory = require('../models/RoomInventory');
 const Settlement = require('../models/Settlement');
 const Notification = require('../models/Notification');
 const ActivityLog = require('../models/ActivityLog');
-const { uploadPaymentScreenshot: uploadPaymentScreenshotUtil } = require('../utils/cloudinary');
+const { getFileUrl, getFileIdentifier, isCloudinaryConfigured } = require('../middleware/upload');
 const { NotFoundError, ForbiddenError, BadRequestError, ConflictError } = require('../utils/errors');
 
 /**
  * Submit payment evidence
  */
 const submitPayment = async (req, res) => {
+  // DEBUG: Log request info
+  console.log('DEBUG submitPayment:');
+  console.log('  req.file:', req.file ? 'EXISTS' : 'undefined');
+  console.log('  req.files:', req.files ? 'EXISTS' : 'undefined');
+  console.log('  req.body:', Object.keys(req.body));
+  console.log('  Content-Type:', req.headers['content-type']);
+
   const customer = req.user;
   const { bookingId, upi } = req.body;
+
+  // Parse upi if it's a JSON string (from multipart/form-data)
+  const parsedUpi = typeof upi === 'string' ? JSON.parse(upi) : upi;
 
   if (!req.file) {
     throw new BadRequestError('Payment screenshot is required');
@@ -29,10 +39,12 @@ const submitPayment = async (req, res) => {
     throw new NotFoundError('Booking not found');
   }
 
-  // Check if payment already exists
+  // Check if payment already exists and has been submitted
   if (booking.payment) {
     const existingPayment = await Payment.findById(booking.payment);
-    if (existingPayment && existingPayment.status !== 'rejected') {
+    // Allow submission if payment is still awaiting_payment (customer hasn't submitted screenshot yet)
+    // Block if already submitted, pending verification, or verified
+    if (existingPayment && !['awaiting_payment', 'rejected'].includes(existingPayment.status)) {
       throw new ConflictError('Payment already submitted for this booking');
     }
   }
@@ -43,37 +55,74 @@ const submitPayment = async (req, res) => {
   }
 
   // Check for duplicate transaction reference
-  const isDuplicate = await Payment.isDuplicateTransactionRef(upi.transactionRef);
+  const isDuplicate = await Payment.isDuplicateTransactionRef(parsedUpi.transactionRef);
   if (isDuplicate) {
     throw new ConflictError('Transaction reference already used');
   }
 
-  // Upload screenshot to Cloudinary
-  const screenshotResult = await uploadPaymentScreenshotUtil(req.file.buffer, bookingId);
+  // Get file URL and identifier (works for both Cloudinary and local storage)
+  const screenshotUrl = getFileUrl(req.file);
+  const screenshotPublicId = getFileIdentifier(req.file);
+  const useCloudinary = isCloudinaryConfigured();
 
-  // Create payment record
-  const payment = await Payment.create({
-    booking: bookingId,
-    customer: customer._id,
-    lodge: booking.lodge,
-    amount: booking.pricing.advanceAmount,
-    upi: {
-      vpa: upi.vpa || (await require('../models/AdminSettings').getSection('upi')).vpa,
-      transactionRef: upi.transactionRef,
-      transactionDate: upi.transactionDate ? new Date(upi.transactionDate) : new Date(),
-      payerName: upi.payerName,
-      payerVPA: upi.payerVPA,
-      bankReference: upi.bankReference,
-    },
-    screenshot: {
-      url: screenshotResult.secure_url,
-      publicId: screenshotResult.public_id,
-      uploadedAt: new Date(),
-      fileSize: req.file.size,
-      mimeType: req.file.mimetype,
-    },
-    status: 'payment_submitted',
-  });
+  if (!screenshotUrl) {
+    throw new BadRequestError('Failed to process uploaded file');
+  }
+
+  // Check if there's an existing payment in awaiting_payment status
+  let payment;
+  if (booking.payment) {
+    const existingPayment = await Payment.findById(booking.payment);
+    if (existingPayment && existingPayment.status === 'awaiting_payment') {
+      // Update existing payment with screenshot and UPI details
+      payment = existingPayment;
+      payment.screenshot = {
+        url: screenshotUrl,
+        publicId: screenshotPublicId,
+        uploadedAt: new Date(),
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+        storageType: useCloudinary ? 'cloudinary' : 'local',
+      };
+      payment.upi = {
+        vpa: parsedUpi.vpa || (await require('../models/AdminSettings').getSection('upi')).vpa,
+        transactionRef: parsedUpi.transactionRef,
+        transactionDate: parsedUpi.transactionDate ? new Date(parsedUpi.transactionDate) : new Date(),
+        payerName: parsedUpi.payerName,
+        payerVPA: parsedUpi.payerVPA,
+        bankReference: parsedUpi.bankReference,
+      };
+      payment.status = 'payment_submitted';
+      await payment.save();
+    }
+  }
+
+  // If no existing payment to update, create new one
+  if (!payment) {
+    payment = await Payment.create({
+      booking: bookingId,
+      customer: customer._id,
+      lodge: booking.lodge,
+      amount: booking.pricing.advanceAmount,
+      upi: {
+        vpa: parsedUpi.vpa || (await require('../models/AdminSettings').getSection('upi')).vpa,
+        transactionRef: parsedUpi.transactionRef,
+        transactionDate: parsedUpi.transactionDate ? new Date(parsedUpi.transactionDate) : new Date(),
+        payerName: parsedUpi.payerName,
+        payerVPA: parsedUpi.payerVPA,
+        bankReference: parsedUpi.bankReference,
+      },
+      screenshot: {
+        url: screenshotUrl,
+        publicId: screenshotPublicId,
+        uploadedAt: new Date(),
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+        storageType: useCloudinary ? 'cloudinary' : 'local',
+      },
+      status: 'payment_submitted',
+    });
+  }
 
   // Update booking status
   booking.status = 'pending_verification';
@@ -82,14 +131,14 @@ const submitPayment = async (req, res) => {
 
   // Submit evidence (sets status to pending_verification and sets expiry)
   await payment.submitEvidence(
-    screenshotResult.secure_url,
-    screenshotResult.public_id,
-    upi.transactionRef,
+    screenshotUrl,
+    screenshotPublicId,
+    parsedUpi.transactionRef,
     {
-      transactionDate: upi.transactionDate ? new Date(upi.transactionDate) : new Date(),
-      payerName: upi.payerName,
-      payerVPA: upi.payerVPA,
-      bankReference: upi.bankReference,
+      transactionDate: parsedUpi.transactionDate ? new Date(parsedUpi.transactionDate) : new Date(),
+      payerName: parsedUpi.payerName,
+      payerVPA: parsedUpi.payerVPA,
+      bankReference: parsedUpi.bankReference,
     }
   );
 

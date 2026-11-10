@@ -17,7 +17,11 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<AuthResponse>>
 
     @POST("auth/refresh")
-    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<ApiResponse<AuthResponse>>
+    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<ApiResponse<RefreshTokenResponse>>
+
+    // Non-suspend version for synchronous token refresh in interceptor
+    @POST("auth/refresh")
+    fun refreshTokenSync(@Body request: RefreshTokenRequest): retrofit2.Call<ApiResponse<RefreshTokenResponse>>
 
     @POST("auth/logout")
     suspend fun logout(): Response<ApiResponse<Unit>>
@@ -28,9 +32,10 @@ interface ApiService {
     // Lodges
     @GET("lodges")
     suspend fun searchLodges(
-        @Query("checkIn") checkIn: String,
-        @Query("checkOut") checkOut: String,
-        @Query("guests") guests: Int = 1,
+        @Query("checkInDate") checkInDate: String,
+        @Query("checkOutDate") checkOutDate: String,
+        @Query("adults") adults: Int = 1,
+        @Query("children") children: Int = 0,
         @Query("rooms") rooms: Int = 1,
         @Query("query") query: String? = null,
         @Query("city") city: String? = null,
@@ -47,8 +52,8 @@ interface ApiService {
     @GET("lodges/{id}")
     suspend fun getLodgeDetail(
         @Path("id") id: String,
-        @Query("checkIn") checkIn: String? = null,
-        @Query("checkOut") checkOut: String? = null
+        @Query("checkInDate") checkInDate: String? = null,
+        @Query("checkOutDate") checkOutDate: String? = null
     ): Response<ApiResponse<Lodge>>
 
     @GET("lodges/featured")

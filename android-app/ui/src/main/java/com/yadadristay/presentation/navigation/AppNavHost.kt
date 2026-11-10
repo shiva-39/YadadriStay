@@ -1,10 +1,12 @@
 package com.yadadristay.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,6 +29,7 @@ import com.yadadristay.presentation.lodgedetail.LodgeDetailScreen
 import com.yadadristay.presentation.lodgedetail.LodgeDetailViewModel
 import com.yadadristay.presentation.mybookings.MyBookingsScreen
 import com.yadadristay.presentation.mybookings.MyBookingsViewModel
+import com.yadadristay.presentation.navigation.NavigationRoute
 import com.yadadristay.presentation.profile.ProfileScreen
 import com.yadadristay.presentation.profile.ProfileViewModel
 import com.yadadristay.presentation.profile.SettingsScreen
@@ -39,6 +42,7 @@ import com.yadadristay.presentation.search.SearchScreen
 import com.yadadristay.presentation.search.SearchViewModel
 import com.yadadristay.presentation.transport.TransportScreen
 import com.yadadristay.presentation.transport.TransportViewModel
+import android.util.Log
 
 @Composable
 fun AppNavHost() {
@@ -50,15 +54,21 @@ fun AppNavHost() {
     }
 }
 
-fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavController) {
+fun NavGraphBuilder.appNavHostGraph(navController: NavController) {
     // Auth Flow
     composable(NavigationRoute.Splash.route) {
-        SplashScreen(onAnimationComplete = {
-            android.util.Log.d("YadadriStay", "AppNavHost: onAnimationComplete called, navigating to onboarding")
-            navController.navigate(NavigationRoute.Onboarding.route) {
-                popUpTo(NavigationRoute.Splash.route) { inclusive = true }
+        SplashScreen(
+            onNavigateToOnboarding = {
+                navController.navigate(NavigationRoute.Onboarding.route) {
+                    popUpTo(NavigationRoute.Splash.route) { inclusive = true }
+                }
+            },
+            onNavigateToHome = {
+                navController.navigate(NavigationRoute.Home.route) {
+                    popUpTo(NavigationRoute.Splash.route) { inclusive = true }
+                }
             }
-        })
+        )
     }
 
     composable(NavigationRoute.Onboarding.route) {
@@ -126,7 +136,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "lodge-detail/{lodgeId}"
     ) { backStackEntry ->
-        val lodgeId = backStackEntry.arguments?.getString("lodgeId")!!
+        val lodgeId = backStackEntry.arguments?.getString("lodgeId")
+        if (lodgeId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid lodgeId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         LodgeDetailScreen(
             lodgeId = lodgeId,
             viewModel = hiltViewModel<LodgeDetailViewModel>(),
@@ -139,8 +154,13 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "room-selection/{lodgeId}/{roomCategoryId}"
     ) { backStackEntry ->
-        val lodgeId = backStackEntry.arguments?.getString("lodgeId")!!
-        val roomCategoryId = backStackEntry.arguments?.getString("roomCategoryId")!!
+        val lodgeId = backStackEntry.arguments?.getString("lodgeId")
+        val roomCategoryId = backStackEntry.arguments?.getString("roomCategoryId")
+        if (lodgeId.isNullOrBlank() || roomCategoryId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid route args for room-selection, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         RoomSelectionScreen(
             lodgeId = lodgeId,
             roomCategoryId = roomCategoryId,
@@ -151,8 +171,29 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
         )
     }
 
-    composable(NavigationRoute.Booking.route) {
+    composable(
+        route = "booking/{lodgeId}/{roomCategoryId}/{checkIn}/{checkOut}/{guests}/{rooms}"
+    ) { backStackEntry ->
+        val args = backStackEntry.arguments
+        val lodgeId = args?.getString("lodgeId")
+        val roomCategoryId = args?.getString("roomCategoryId")
+        val checkIn = args?.getString("checkIn")
+        val checkOut = args?.getString("checkOut")
+        val guests = args?.getInt("guests") ?: 1
+        val rooms = args?.getInt("rooms") ?: 1
+
+        if (lodgeId.isNullOrBlank() || roomCategoryId.isNullOrBlank() || checkIn.isNullOrBlank() || checkOut.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid route args for booking, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         BookingScreen(
+            lodgeId = lodgeId,
+            roomCategoryId = roomCategoryId,
+            checkIn = checkIn,
+            checkOut = checkOut,
+            guests = guests,
+            rooms = rooms,
             viewModel = hiltViewModel<BookingViewModel>(),
             onNavigate = { route ->
                 navigateToRoute(navController, route)
@@ -163,7 +204,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "payment/{bookingId}"
     ) { backStackEntry ->
-        val bookingId = backStackEntry.arguments?.getString("bookingId")!!
+        val bookingId = backStackEntry.arguments?.getString("bookingId")
+        if (bookingId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid bookingId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         PaymentScreen(
             bookingId = bookingId,
             viewModel = hiltViewModel<PaymentViewModel>(),
@@ -176,7 +222,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "booking-confirmation/{bookingId}"
     ) { backStackEntry ->
-        val bookingId = backStackEntry.arguments?.getString("bookingId")!!
+        val bookingId = backStackEntry.arguments?.getString("bookingId")
+        if (bookingId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid bookingId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         BookingConfirmationScreen(
             bookingId = bookingId,
             viewModel = hiltViewModel<BookingConfirmationViewModel>(),
@@ -198,7 +249,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "booking-detail/{bookingId}"
     ) { backStackEntry ->
-        val bookingId = backStackEntry.arguments?.getString("bookingId")!!
+        val bookingId = backStackEntry.arguments?.getString("bookingId")
+        if (bookingId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid bookingId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         MyBookingsScreen(
             viewModel = hiltViewModel<MyBookingsViewModel>(),
             onNavigate = { route ->
@@ -282,7 +338,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "transport-detail/{requestId}"
     ) { backStackEntry ->
-        val requestId = backStackEntry.arguments?.getString("requestId")!!
+        val requestId = backStackEntry.arguments?.getString("requestId")
+        if (requestId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid requestId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         TransportScreen(
             viewModel = hiltViewModel<TransportViewModel>(),
             onNavigate = { route ->
@@ -294,7 +355,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "reviews/{lodgeId}"
     ) { backStackEntry ->
-        val lodgeId = backStackEntry.arguments?.getString("lodgeId")!!
+        val lodgeId = backStackEntry.arguments?.getString("lodgeId")
+        if (lodgeId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid lodgeId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         ReviewsScreen(
             lodgeId = lodgeId,
             viewModel = hiltViewModel<ReviewsViewModel>(),
@@ -307,7 +373,12 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     composable(
         route = "write-review/{bookingId}"
     ) { backStackEntry ->
-        val bookingId = backStackEntry.arguments?.getString("bookingId")!!
+        val bookingId = backStackEntry.arguments?.getString("bookingId")
+        if (bookingId.isNullOrBlank()) {
+            Log.w("YadadriStay", "Invalid bookingId in route, popping back")
+            LaunchedEffect(Unit) { navController.popBackStack() }
+            return@composable
+        }
         WriteReviewScreen(
             bookingId = bookingId,
             viewModel = hiltViewModel<WriteReviewViewModel>(),
@@ -336,7 +407,7 @@ fun NavGraphBuilder.appNavHostGraph(navController: androidx.navigation.NavContro
     }
 }
 
-private fun navigateToRoute(navController: androidx.navigation.NavController, route: NavigationRoute) {
+private fun navigateToRoute(navController: NavController, route: NavigationRoute) {
     when (route) {
         is NavigationRoute.Splash -> navController.navigate(route.route)
         is NavigationRoute.Onboarding -> navController.navigate(route.route)

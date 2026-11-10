@@ -1,12 +1,45 @@
 package com.yadadristay.util
 
 object Constants {
-    // API
-    const val BASE_URL = "http://10.0.2.2:5000/api/" // 10.0.2.2 is localhost for Android emulator
-    // For physical device, use: "http://YOUR_PC_IP:5000/api/"
+    // API Base URL Configuration
+    // Supports multiple environments via build config or runtime detection
 
-    // Image base URL
-    const val IMAGE_BASE_URL = "http://10.0.2.2:5000"
+    // Emulator (10.0.2.2 tunnels to host localhost)
+    private const val EMULATOR_BASE_URL = "http://10.0.2.2:5000/api/"
+    private const val EMULATOR_IMAGE_BASE_URL = "http://10.0.2.2:5000"
+
+    // Physical Device - LAN IP (update this to your PC's LAN IP)
+    // Find with: ipconfig (Windows) / ifconfig (Mac/Linux)
+    private const val DEVICE_BASE_URL = "http://192.168.31.110:5000/api/"
+    private const val DEVICE_IMAGE_BASE_URL = "http://192.168.31.110:5000"
+
+    // Production (HTTPS)
+    private const val PROD_BASE_URL = "https://api.yadadristay.com/api/"
+    private const val PROD_IMAGE_BASE_URL = "https://api.yadadristay.com"
+
+    // Active configuration - change based on build variant or runtime
+    // Options: "emulator", "device", "production"
+    private const val ACTIVE_ENV = "device" // Change to "device" for physical device testing
+
+    val BASE_URL: String
+        get() = when (ACTIVE_ENV) {
+            "device" -> DEVICE_BASE_URL
+            "production" -> PROD_BASE_URL
+            else -> EMULATOR_BASE_URL
+        }
+
+    val IMAGE_BASE_URL: String
+        get() = when (ACTIVE_ENV) {
+            "device" -> DEVICE_IMAGE_BASE_URL
+            "production" -> PROD_IMAGE_BASE_URL
+            else -> EMULATOR_IMAGE_BASE_URL
+        }
+
+    // Helper to override at runtime (e.g., from settings screen)
+    fun setBaseUrlOverride(url: String) {
+        // This would require a mutable state solution (SharedPreferences/DataStore)
+        // For now, use build-time configuration above
+    }
 
     // Preferences
     const val PREFS_NAME = "yadadri_stay_prefs"

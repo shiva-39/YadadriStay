@@ -30,15 +30,18 @@ class BookingViewModel @Inject constructor(
     private var _guests: Int = 1
     private var _rooms: Int = 1
 
-    init {
-        loadBookingSummary()
-    }
-
     fun loadBookingSummary() {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
-            val result = getBookingSummaryUseCase()
+            val result = getBookingSummaryUseCase(
+                lodgeId = _lodgeId,
+                roomCategoryId = _roomCategoryId,
+                checkIn = _checkIn,
+                checkOut = _checkOut,
+                guests = _guests,
+                rooms = _rooms
+            )
 
             _uiState.value = _uiState.value.copy(isLoading = false)
 

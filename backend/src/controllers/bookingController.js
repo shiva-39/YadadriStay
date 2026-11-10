@@ -73,9 +73,9 @@ const createBooking = async (req, res) => {
 
   await booking.save();
 
-  // Reserve inventory atomically
+  // Reserve inventory atomically (with fallback for standalone MongoDB)
   try {
-    await RoomInventory.reserveRooms(
+    await RoomInventory.reserveRoomsUnified(
       lodgeId,
       roomCategoryId,
       checkInDate,

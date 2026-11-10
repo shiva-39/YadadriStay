@@ -48,11 +48,16 @@ const paymentSchema = new mongoose.Schema(
     upi: {
       vpa: {
         type: String,
-        required: true,
+        // Required when payment is submitted for verification
+        required: function() {
+          return ['payment_submitted', 'pending_verification', 'verified', 'rejected'].includes(this.status);
+        },
       },
       transactionRef: {
         type: String,
-        required: [true, 'UPI transaction reference is required'],
+        required: function() {
+          return ['payment_submitted', 'pending_verification', 'verified', 'rejected'].includes(this.status);
+        },
         trim: true,
         uppercase: true,
         index: true,
@@ -66,7 +71,9 @@ const paymentSchema = new mongoose.Schema(
     screenshot: {
       url: {
         type: String,
-        required: [true, 'Payment screenshot is required'],
+        required: function() {
+          return ['payment_submitted', 'pending_verification', 'verified', 'rejected'].includes(this.status);
+        },
       },
       publicId: String,
       uploadedAt: {
@@ -75,6 +82,11 @@ const paymentSchema = new mongoose.Schema(
       },
       fileSize: Number,
       mimeType: String,
+      storageType: {
+        type: String,
+        enum: ['cloudinary', 'local'],
+        default: 'cloudinary',
+      },
     },
     // Status
     status: {
@@ -179,10 +191,13 @@ paymentSchema.pre('save', function (next) {
 // Method to submit payment evidence
 paymentSchema.methods.submitEvidence = function (screenshotUrl, publicId, transactionRef, upiDetails = {}) {
   this.status = 'payment_submitted';
+  // Preserve existing storageType if present, otherwise default to cloudinary
+  const existingStorageType = this.screenshot?.storageType || 'cloudinary';
   this.screenshot = {
     url: screenshotUrl,
     publicId,
     uploadedAt: new Date(),
+    storageType: existingStorageType,
     ...upiDetails,
   };
   this.upi.transactionRef = transactionRef;
@@ -210,11 +225,11 @@ paymentSchema.methods.verify = async function (verifiedBy, notes = '') {
   const Booking = mongoose.model('Booking');
   await Booking.findByIdAndUpdate(this.booking, { status: 'confirmed' });
 
-  // Confirm inventory reservation
+  // Confirm inventory reservation (with fallback for standalone MongoDB)
   const RoomInventory = mongoose.model('RoomInventory');
   const booking = await Booking.findById(this.booking).populate('roomCategory');
   if (booking) {
-    await RoomInventory.confirmReservation(
+    await RoomInventory.confirmReservationUnified(
       booking.lodge,
       booking.roomCategory._id,
       booking.checkInDate,
@@ -246,10 +261,10 @@ paymentSchema.methods.reject = async function (verifiedBy, reason) {
   const Booking = mongoose.model('Booking');
   const booking = await Booking.findByIdAndUpdate(this.booking, { status: 'expired' });
 
-  // Release inventory reservation
+  // Release inventory reservation (with fallback for standalone MongoDB)
   if (booking) {
     const RoomInventory = mongoose.model('RoomInventory');
-    await RoomInventory.releaseReservation(
+    await RoomInventory.releaseReservationUnified(
       booking.lodge,
       booking.roomCategory,
       booking.checkInDate,

@@ -29,6 +29,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -40,22 +42,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yadadristay.presentation.components.str
 import com.yadadristay.presentation.components.Str
+import com.yadadristay.domain.repository.AuthState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SplashScreen(
-    onAnimationComplete: () -> Unit
+    onNavigateToOnboarding: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
+    val authViewModel: AuthViewModel = viewModel()
+    val authState by authViewModel.authState.collectAsStateWithLifecycle(AuthState.Loading)
     val coroutineScope = rememberCoroutineScope()
+    var hasNavigated by remember { mutableStateOf(false) }
 
-    // Auto-navigate after splash animation duration
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        android.util.Log.d("YadadriStay", "SplashScreen: LaunchedEffect started, delaying 2500ms")
-        delay(2500) // Show splash for 2.5 seconds
-        android.util.Log.d("YadadriStay", "SplashScreen: delay complete, calling onAnimationComplete")
-        onAnimationComplete()
+    // Observe auth state and navigate accordingly after minimum splash duration
+    androidx.compose.runtime.LaunchedEffect(authState) {
+        if (!hasNavigated) {
+            // Minimum splash duration
+            delay(1500)
+            hasNavigated = true
+            when (authState) {
+                is AuthState.Authenticated -> {
+                    android.util.Log.d("YadadriStay", "SplashScreen: User authenticated, navigating to home")
+                    onNavigateToHome()
+                }
+                is AuthState.Unauthenticated, AuthState.Loading -> {
+                    android.util.Log.d("YadadriStay", "SplashScreen: User unauthenticated/loading, navigating to onboarding")
+                    onNavigateToOnboarding()
+                }
+            }
+        }
     }
 
     Box(

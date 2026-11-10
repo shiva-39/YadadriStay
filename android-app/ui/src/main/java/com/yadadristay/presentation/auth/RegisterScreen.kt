@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yadadristay.presentation.auth.AuthViewModel
+import com.yadadristay.domain.repository.AuthState
 import com.yadadristay.presentation.components.str
 import com.yadadristay.presentation.components.YadadriButton
 import com.yadadristay.presentation.components.YadadriTextField
@@ -62,6 +63,24 @@ fun AuthScreen(
     onNavigateToRegister: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val authState by viewModel.authState.collectAsStateWithLifecycle(AuthState.Loading)
+
+    // Observe auth state changes and navigate on successful authentication
+    androidx.compose.runtime.LaunchedEffect(authState) {
+        val currentAuthState = authState
+        when (currentAuthState) {
+            is AuthState.Authenticated -> {
+                android.util.Log.d("YadadriStay", "AuthScreen: User authenticated, navigating to home")
+                onLoginSuccess()
+            }
+            is AuthState.Unauthenticated -> {
+                android.util.Log.d("YadadriStay", "AuthScreen: User unauthenticated: ${currentAuthState.message}")
+            }
+            AuthState.Loading -> {
+                android.util.Log.d("YadadriStay", "AuthScreen: Auth loading")
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),

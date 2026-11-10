@@ -64,7 +64,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiClient.apiService.login(LoginRequest(phone, password))
             if (response.isSuccessful && response.body()?.success == true) {
                 val data = response.body()!!.data!!
-                tokenManager.saveAuthData(data.token, data.refreshToken, data.user)
+                tokenManager.saveAuthData(data.accessToken, data.refreshToken, data.user)
                 _authState.value = AuthState.Authenticated(UserProfile.fromApi(data.user))
                 Result.success(UserProfile.fromApi(data.user))
             } else {
@@ -86,7 +86,7 @@ class AuthRepositoryImpl @Inject constructor(
             )
             if (response.isSuccessful && response.body()?.success == true) {
                 val data = response.body()!!.data!!
-                tokenManager.saveAuthData(data.token, data.refreshToken, data.user)
+                tokenManager.saveAuthData(data.accessToken, data.refreshToken, data.user)
                 _authState.value = AuthState.Authenticated(UserProfile.fromApi(data.user))
                 Result.success(UserProfile.fromApi(data.user))
             } else {
@@ -114,8 +114,8 @@ class AuthRepositoryImpl @Inject constructor(
             val response = apiClient.apiService.refreshToken(RefreshTokenRequest(refreshToken))
             if (response.isSuccessful && response.body()?.success == true) {
                 val data = response.body()!!.data!!
-                tokenManager.updateAccessToken(data.token)
-                Result.success(data.token)
+                tokenManager.updateAccessToken(data.accessToken)
+                Result.success(data.accessToken)
             } else {
                 tokenManager.clearAuthData()
                 _authState.value = AuthState.Unauthenticated("Session expired")
@@ -156,8 +156,8 @@ class LodgeRepositoryImpl @Inject constructor(
     override suspend fun searchLodges(filters: SearchFilters): Result<PaginatedResult<LodgeSummary>> {
         return try {
             val response = apiClient.apiService.searchLodges(
-                checkIn = filters.checkIn, checkOut = filters.checkOut, guests = filters.guests,
-                rooms = filters.rooms, query = filters.query, city = filters.city,
+                checkInDate = filters.checkIn, checkOutDate = filters.checkOut, adults = filters.guests,
+                children = 0, rooms = filters.rooms, query = filters.query, city = filters.city,
                 minPrice = filters.minPrice, maxPrice = filters.maxPrice,
                 minRating = filters.minRating, amenities = filters.amenities,
                 roomType = filters.roomType, sortBy = filters.sortBy.value,
@@ -276,7 +276,7 @@ class BookingRepositoryImpl @Inject constructor(
         return try {
             val apiRequest = com.yadadristay.data.model.CreateBookingRequest(
                 request.lodgeId, request.roomCategoryId, request.checkIn, request.checkOut,
-                request.guests, request.rooms, request.customerName, request.customerPhone,
+                com.yadadristay.data.model.GuestInfo(request.guests, 0), request.rooms, request.customerName, request.customerPhone,
                 request.customerEmail, request.specialRequests, request.paymentMethod
             )
             val response = apiClient.apiService.createBooking(authHeader, apiRequest)

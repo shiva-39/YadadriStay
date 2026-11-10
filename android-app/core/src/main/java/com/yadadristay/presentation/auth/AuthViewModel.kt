@@ -2,6 +2,8 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yadadristay.domain.repository.AuthRepository
+import com.yadadristay.domain.repository.AuthState
 import com.yadadristay.domain.usecase.auth.LoginUseCase
 import com.yadadristay.domain.usecase.auth.RegisterUseCase
 import com.yadadristay.domain.usecase.auth.SendOtpUseCase
@@ -11,6 +13,7 @@ import com.yadadristay.domain.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,11 +23,16 @@ class AuthViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     private val sendOtpUseCase: SendOtpUseCase,
     private val verifyOtpUseCase: VerifyOtpUseCase,
-    private val googleSignInUseCase: GoogleSignInUseCase
+    private val googleSignInUseCase: GoogleSignInUseCase,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
+
+    // Expose auth state from repository for UI to observe login/logout
+    val authState = authRepository.observeAuthState()
+        .distinctUntilChanged()
 
     fun onPhoneOrEmailChange(value: String) {
         _uiState.value = _uiState.value.copy(

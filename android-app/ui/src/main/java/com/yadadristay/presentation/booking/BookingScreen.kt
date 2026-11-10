@@ -73,9 +73,20 @@ import androidx.compose.ui.unit.Dp
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun BookingScreen(
+    lodgeId: String,
+    roomCategoryId: String,
+    checkIn: String,
+    checkOut: String,
+    guests: Int,
+    rooms: Int,
     viewModel: BookingViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onNavigate: (NavigationRoute) -> Unit
 ) {
+    // Initialize ViewModel with booking parameters
+    androidx.compose.runtime.LaunchedEffect(lodgeId, roomCategoryId, checkIn, checkOut, guests, rooms) {
+        viewModel.setBookingParams(lodgeId, roomCategoryId, checkIn, checkOut, guests, rooms)
+        viewModel.loadBookingSummary()
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LoadingOverlay(isLoading = uiState.isLoading && uiState.bookingSummary == null) {

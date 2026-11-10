@@ -40,26 +40,37 @@ data class RegisterRequest(
 
 data class AuthResponse(
     @Json(name = "user") val user: User,
-    @Json(name = "token") val token: String,
+    @Json(name = "accessToken") val accessToken: String,
     @Json(name = "refreshToken") val refreshToken: String
-)
+) {
+    // Backward compatibility
+    val token: String get() = accessToken
+}
 
 data class RefreshTokenRequest(
     @Json(name = "refreshToken") val refreshToken: String
 )
 
+data class RefreshTokenResponse(
+    @Json(name = "accessToken") val accessToken: String,
+    @Json(name = "refreshToken") val refreshToken: String
+)
+
 // User Models
 data class User(
-    @Json(name = "_id") val id: String,
+    @Json(name = "id") val id: String,
+    @Json(name = "_id") val mongoId: String = "",
     @Json(name = "fullName") val fullName: String,
     @Json(name = "phone") val phone: String,
     @Json(name = "email") val email: String?,
     @Json(name = "role") val role: String,
     @Json(name = "avatar") val avatar: String?,
+    @Json(name = "isVerified") val isVerified: Boolean = false,
     @Json(name = "isEmailVerified") val isEmailVerified: Boolean = false,
     @Json(name = "isPhoneVerified") val isPhoneVerified: Boolean = false,
-    @Json(name = "createdAt") val createdAt: String,
-    @Json(name = "lastLogin") val lastLogin: String?,
+    @Json(name = "createdAt") val createdAt: String = "",
+    @Json(name = "lastLogin") val lastLogin: String? = null,
+    @Json(name = "language") val language: String = "en",
     // Lodge Owner specific
     @Json(name = "businessName") val businessName: String?,
     @Json(name = "gstNumber") val gstNumber: String?,
@@ -191,14 +202,102 @@ data class RoomCategory(
     @Json(name = "_id") val id: String,
     @Json(name = "name") val name: String,
     @Json(name = "description") val description: String?,
-    @Json(name = "basePrice") val basePrice: Double,
-    @Json(name = "maxOccupancy") val maxOccupancy: Int,
+    // Backend has nested pricing object
+    @Json(name = "pricing") val pricing: RoomCategoryPricing?,
+    // Flat fields for backward compatibility / direct access
+    @Json(name = "basePrice") val basePrice: Double = 0.0,
+    @Json(name = "weekendPrice") val weekendPrice: Double = 0.0,
+    @Json(name = "holidayPrice") val holidayPrice: Double = 0.0,
+    // Backend has nested capacity object
+    @Json(name = "capacity") val capacity: RoomCategoryCapacity?,
+    @Json(name = "maxOccupancy") val maxOccupancy: Int = 0,
     @Json(name = "totalRooms") val totalRooms: Int,
-    @Json(name = "amenities") val amenities: List<String> = emptyList(),
-    @Json(name = "images") val images: List<String> = emptyList(),
+    @Json(name = "type") val type: String = "double",
+    @Json(name = "acType") val acType: String = "ac",
+    @Json(name = "amenities") val amenities: RoomCategoryAmenities?,
+    @Json(name = "amenitiesList") val amenitiesList: List<String> = emptyList(),
+    @Json(name = "images") val images: List<RoomCategoryImage> = emptyList(),
     @Json(name = "bedType") val bedType: String = "double",
     @Json(name = "roomSize") val roomSize: Int? = null,
-    @Json(name = "isActive") val isActive: Boolean = true
+    @Json(name = "isActive") val isActive: Boolean = true,
+    @Json(name = "displayOrder") val displayOrder: Int = 0
+) {
+    // Unified getters for backward compatibility
+    val effectiveBasePrice: Double
+        get() = pricing?.basePrice ?: basePrice
+
+    val effectiveWeekendPrice: Double
+        get() = pricing?.weekendPrice ?: weekendPrice
+
+    val effectiveHolidayPrice: Double
+        get() = pricing?.holidayPrice ?: holidayPrice
+
+    val effectiveMaxOccupancy: Int
+        get() = capacity?.maxOccupancy ?: maxOccupancy
+
+    val effectiveAmenities: List<String>
+        get() = amenitiesList.ifEmpty { amenities?.toAmenitiesList() ?: emptyList() }
+}
+
+fun RoomCategoryAmenities.toAmenitiesList(): List<String> {
+    return buildList {
+        if (wifi) add("WiFi")
+        if (ac) add("AC")
+        if (hotWater) add("Hot Water")
+        if (tv) add("TV")
+        if (fan) add("Fan")
+        if (attachedBathroom) add("Attached Bathroom")
+        if (wardrobe) add("Wardrobe")
+        if (dressingTable) add("Dressing Table")
+        if (balcony) add("Balcony")
+        if (window) add("Window")
+        if (intercom) add("Intercom")
+        if (safe) add("Safe")
+        if (miniFridge) add("Mini Fridge")
+        if (teaCoffeeMaker) add("Tea/Coffee Maker")
+        addAll(other)
+    }
+}
+
+data class RoomCategoryPricing(
+    @Json(name = "basePrice") val basePrice: Double,
+    @Json(name = "weekendPrice") val weekendPrice: Double = 0.0,
+    @Json(name = "holidayPrice") val holidayPrice: Double = 0.0,
+    @Json(name = "currency") val currency: String = "INR",
+    @Json(name = "taxInclusive") val taxInclusive: Boolean = true
+)
+
+data class RoomCategoryCapacity(
+    @Json(name = "adults") val adults: Int,
+    @Json(name = "children") val children: Int = 0,
+    @Json(name = "maxOccupancy") val maxOccupancy: Int
+)
+
+data class RoomCategoryAmenities(
+    @Json(name = "bedType") val bedType: String = "double",
+    @Json(name = "bedCount") val bedCount: Int = 1,
+    @Json(name = "attachedBathroom") val attachedBathroom: Boolean = true,
+    @Json(name = "hotWater") val hotWater: Boolean = true,
+    @Json(name = "tv") val tv: Boolean = false,
+    @Json(name = "wifi") val wifi: Boolean = false,
+    @Json(name = "ac") val ac: Boolean = false,
+    @Json(name = "fan") val fan: Boolean = true,
+    @Json(name = "wardrobe") val wardrobe: Boolean = true,
+    @Json(name = "dressingTable") val dressingTable: Boolean = false,
+    @Json(name = "balcony") val balcony: Boolean = false,
+    @Json(name = "window") val window: Boolean = true,
+    @Json(name = "intercom") val intercom: Boolean = false,
+    @Json(name = "safe") val safe: Boolean = false,
+    @Json(name = "miniFridge") val miniFridge: Boolean = false,
+    @Json(name = "teaCoffeeMaker") val teaCoffeeMaker: Boolean = false,
+    @Json(name = "other") val other: List<String> = emptyList()
+)
+
+data class RoomCategoryImage(
+    @Json(name = "url") val url: String,
+    @Json(name = "caption") val caption: String?,
+    @Json(name = "isPrimary") val isPrimary: Boolean = false,
+    @Json(name = "order") val order: Int = 0
 )
 
 // Room Inventory (Date-wise)
@@ -223,7 +322,9 @@ data class PriceSnapshot(
 // Booking Models
 data class Booking(
     @Json(name = "_id") val id: String,
-    @Json(name = "bookingNumber") val bookingNumber: String,
+    // Backend uses bookingId, Android expects bookingNumber - support both
+    @Json(name = "bookingId") val bookingId: String?,
+    @Json(name = "bookingNumber") val bookingNumberRaw: String?,
     @Json(name = "lodgeId") val lodgeId: String,
     @Json(name = "lodgeName") val lodgeName: String?,
     @Json(name = "lodgeAddress") val lodgeAddress: String?,
@@ -233,11 +334,15 @@ data class Booking(
     @Json(name = "customerName") val customerName: String?,
     @Json(name = "customerPhone") val customerPhone: String?,
     @Json(name = "customerEmail") val customerEmail: String?,
-    @Json(name = "checkIn") val checkIn: String,
-    @Json(name = "checkOut") val checkOut: String,
+    // Backend uses checkInDate/checkOutDate, Android uses checkIn/checkOut
+    @Json(name = "checkInDate") val checkInDate: String?,
+    @Json(name = "checkOutDate") val checkOutDate: String?,
+    @Json(name = "checkIn") val checkInRaw: String?,
+    @Json(name = "checkOut") val checkOutRaw: String?,
     @Json(name = "nights") val nights: Int,
     @Json(name = "guests") val guests: Int,
-    @Json(name = "roomsBooked") val roomsBooked: Int = 1,
+    @Json(name = "rooms") val rooms: Int = 1,
+    @Json(name = "roomsBooked") val roomsBookedRaw: Int = 1,
     @Json(name = "status") val status: String,
     @Json(name = "bookingSource") val bookingSource: String = "online",
     @Json(name = "pricing") val pricing: BookingPricing,
@@ -247,16 +352,30 @@ data class Booking(
     @Json(name = "updatedAt") val updatedAt: String,
     @Json(name = "confirmedAt") val confirmedAt: String?,
     @Json(name = "cancelledAt") val cancelledAt: String?,
-    @Json(name = "cancellationReason") val cancellationReason: String?
+    @Json(name = "cancellationReason") val cancellationReason: String?,
+    @Json(name = "expiresAt") val expiresAt: String?
 ) {
+    // Unified getters for backward compatibility
+    val bookingNumber: String
+        get() = bookingId ?: bookingNumberRaw ?: id
+
+    val checkIn: String
+        get() = checkInDate ?: checkInRaw ?: ""
+
+    val checkOut: String
+        get() = checkOutDate ?: checkOutRaw ?: ""
+
+    val roomsBooked: Int
+        get() = rooms
+
     val isUpcoming: Boolean
-        get() = status == "confirmed" || status == "pending"
+        get() = status == "confirmed" || status == "pending_payment" || status == "pending_verification" || status == "pending"
 
     val isPast: Boolean
-        get() = status == "completed" || status == "cancelled"
+        get() = status == "completed" || status == "cancelled" || status == "refunded" || status == "no_show" || status == "expired"
 
     val canCancel: Boolean
-        get() = status == "confirmed" || status == "pending"
+        get() = status == "confirmed" || status == "pending_payment" || status == "pending_verification" || status == "pending"
 }
 
 data class BookingPricing(
@@ -274,12 +393,18 @@ data class PaymentInfo(
     @Json(name = "amount") val amount: Double,
     @Json(name = "paymentMethod") val paymentMethod: String,
     @Json(name = "status") val status: String,
+    // Backend uses upi.transactionRef
     @Json(name = "transactionId") val transactionId: String?,
+    @Json(name = "upiTransactionRef") val upiTransactionRef: String?,
     @Json(name = "upiId") val upiId: String?,
     @Json(name = "screenshot") val screenshot: String?,
     @Json(name = "paidAt") val paidAt: String?,
     @Json(name = "verifiedAt") val verifiedAt: String?
-)
+) {
+    // Unified getter for transaction reference
+    val effectiveTransactionId: String?
+        get() = transactionId ?: upiTransactionRef
+}
 
 // Payment Models
 data class PaymentRequest(
@@ -323,12 +448,17 @@ data class LodgeSearchResponse(
 )
 
 // Booking Request
+data class GuestInfo(
+    @Json(name = "adults") val adults: Int,
+    @Json(name = "children") val children: Int = 0
+)
+
 data class CreateBookingRequest(
     @Json(name = "lodgeId") val lodgeId: String,
     @Json(name = "roomCategoryId") val roomCategoryId: String,
-    @Json(name = "checkIn") val checkIn: String,
-    @Json(name = "checkOut") val checkOut: String,
-    @Json(name = "guests") val guests: Int,
+    @Json(name = "checkInDate") val checkInDate: String,
+    @Json(name = "checkOutDate") val checkOutDate: String,
+    @Json(name = "guests") val guests: GuestInfo,
     @Json(name = "rooms") val rooms: Int = 1,
     @Json(name = "customerName") val customerName: String,
     @Json(name = "customerPhone") val customerPhone: String,

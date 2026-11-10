@@ -570,4 +570,286 @@ roomInventorySchema.statics.bulkUpdateAvailability = async function (
   return { modifiedCount: 0 };
 };
 
+// ==================== NON-TRANSACTIONAL FALLBACK METHODS ====================
+// These methods work on standalone MongoDB without replica set
+
+/**
+ * Non-transactional reserve rooms (fallback for standalone MongoDB)
+ * Uses optimistic locking with version checking
+ */
+roomInventorySchema.statics.reserveRoomsFallback = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  reservationMinutes = 10
+) {
+  const dates = [];
+  const current = new Date(checkInDate);
+  const end = new Date(checkOutDate);
+
+  while (current < end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  const expiresAt = new Date(Date.now() + reservationMinutes * 60 * 1000);
+
+  // Find all inventory records for the date range
+  const inventoryRecords = await this.find({
+    lodge: lodgeId,
+    roomCategory: roomCategoryId,
+    date: { $in: dates },
+  });
+
+  if (inventoryRecords.length !== dates.length) {
+    throw new Error('Inventory records not found for all dates');
+  }
+
+  // Check availability for all dates
+  for (const record of inventoryRecords) {
+    if (record.availableRooms < quantity) {
+      throw new Error(`Insufficient availability on ${record.date.toISOString().split('T')[0]}`);
+    }
+    if (record.isClosed) {
+      throw new Error(`Lodge is closed on ${record.date.toISOString().split('T')[0]}`);
+    }
+  }
+
+  // Use bulkWrite without session (non-transactional)
+  // Each update includes a version check for optimistic locking
+  const bulkOps = inventoryRecords.map((record) => ({
+    updateOne: {
+      filter: {
+        _id: record._id,
+        availableRooms: { $gte: quantity }, // Optimistic lock: only update if still available
+      },
+      update: {
+        $inc: { availableRooms: -quantity },
+        $push: {
+          reservedRooms: {
+            bookingId,
+            quantity,
+            expiresAt,
+          },
+        },
+        $set: { lastUpdatedBy: bookingId },
+      },
+    },
+  }));
+
+  const result = await this.bulkWrite(bulkOps, { ordered: false });
+
+  // Verify all updates succeeded
+  if (result.modifiedCount !== dates.length) {
+    // Some updates failed - rollback what we can
+    await this.releaseReservationFallback(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId);
+    throw new Error('Concurrent modification detected, reservation failed. Please retry.');
+  }
+
+  return { success: true, expiresAt };
+};
+
+/**
+ * Non-transactional confirm reservation (fallback)
+ */
+roomInventorySchema.statics.confirmReservationFallback = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  bookingType = 'online'
+) {
+  const dates = [];
+  const current = new Date(checkInDate);
+  const end = new Date(checkOutDate);
+
+  while (current < end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  const bulkOps = dates.map((date) => ({
+    updateOne: {
+      filter: {
+        lodge: lodgeId,
+        roomCategory: roomCategoryId,
+        date,
+        'reservedRooms.bookingId': bookingId,
+      },
+      update: {
+        $pull: { reservedRooms: { bookingId } },
+        $push: {
+          bookedRooms: {
+            bookingId,
+            quantity,
+            bookingType,
+          },
+        },
+      },
+    },
+  }));
+
+  await this.bulkWrite(bulkOps, { ordered: false });
+  return { success: true };
+};
+
+/**
+ * Non-transactional release reservation (fallback)
+ */
+roomInventorySchema.statics.releaseReservationFallback = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId
+) {
+  const dates = [];
+  const current = new Date(checkInDate);
+  const end = new Date(checkOutDate);
+
+  while (current < end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  const bulkOps = dates.map((date) => ({
+    updateOne: {
+      filter: {
+        lodge: lodgeId,
+        roomCategory: roomCategoryId,
+        date,
+      },
+      update: {
+        $inc: { availableRooms: quantity },
+        $pull: { reservedRooms: { bookingId } },
+      },
+    },
+  }));
+
+  await this.bulkWrite(bulkOps, { ordered: false });
+  return { success: true };
+};
+
+/**
+ * Non-transactional release booking (fallback)
+ */
+roomInventorySchema.statics.releaseBookingFallback = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  bookingType = 'online'
+) {
+  const dates = [];
+  const current = new Date(checkInDate);
+  const end = new Date(checkOutDate);
+
+  while (current < end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  const pullField = bookingType === 'offline' ? 'offlineBookedRooms' : 'bookedRooms';
+
+  const bulkOps = dates.map((date) => ({
+    updateOne: {
+      filter: {
+        lodge: lodgeId,
+        roomCategory: roomCategoryId,
+        date,
+      },
+      update: {
+        $inc: { availableRooms: quantity },
+        $pull: { [pullField]: { bookingId } },
+      },
+    },
+  }));
+
+  await this.bulkWrite(bulkOps, { ordered: false });
+  return { success: true };
+};
+
+// ==================== UNIFIED METHODS WITH AUTO-FALLBACK ====================
+
+const { hasTransactionSupport, withTransactionFallback } = require('../config/database');
+
+/**
+ * Unified reserve rooms - uses transactions if available, fallback otherwise
+ */
+roomInventorySchema.statics.reserveRoomsUnified = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  reservationMinutes = 10
+) {
+  const transactionalFn = () => this.reserveRooms(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, reservationMinutes);
+  const fallbackFn = () => this.reserveRoomsFallback(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, reservationMinutes);
+
+  return withTransactionFallback(transactionalFn, fallbackFn);
+};
+
+/**
+ * Unified confirm reservation
+ */
+roomInventorySchema.statics.confirmReservationUnified = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  bookingType = 'online'
+) {
+  const transactionalFn = () => this.confirmReservation(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, bookingType);
+  const fallbackFn = () => this.confirmReservationFallback(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, bookingType);
+
+  return withTransactionFallback(transactionalFn, fallbackFn);
+};
+
+/**
+ * Unified release reservation
+ */
+roomInventorySchema.statics.releaseReservationUnified = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId
+) {
+  const transactionalFn = () => this.releaseReservation(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId);
+  const fallbackFn = () => this.releaseReservationFallback(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId);
+
+  return withTransactionFallback(transactionalFn, fallbackFn);
+};
+
+/**
+ * Unified release booking
+ */
+roomInventorySchema.statics.releaseBookingUnified = async function (
+  lodgeId,
+  roomCategoryId,
+  checkInDate,
+  checkOutDate,
+  quantity,
+  bookingId,
+  bookingType = 'online'
+) {
+  const transactionalFn = () => this.releaseBooking(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, bookingType);
+  const fallbackFn = () => this.releaseBookingFallback(lodgeId, roomCategoryId, checkInDate, checkOutDate, quantity, bookingId, bookingType);
+
+  return withTransactionFallback(transactionalFn, fallbackFn);
+};
+
 module.exports = mongoose.model('RoomInventory', roomInventorySchema);

@@ -57,6 +57,10 @@ class TokenManager @Inject constructor(
         prefs.edit().putString(KEY_ACCESS_TOKEN, token).apply()
     }
 
+    fun updateRefreshToken(token: String) {
+        prefs.edit().putString(KEY_REFRESH_TOKEN, token).apply()
+    }
+
     fun updateUser(user: User) {
         prefs.edit().putString(KEY_USER, jsonAdapter.toJson(user)).apply()
     }

@@ -16,7 +16,14 @@ sealed class NavigationRoute(val route: String) {
     object Search : NavigationRoute("search")
     data class LodgeDetail(val lodgeId: String) : NavigationRoute("lodge-detail/$lodgeId")
     data class RoomSelection(val lodgeId: String, val roomCategoryId: String) : NavigationRoute("room-selection/$lodgeId/$roomCategoryId")
-    object Booking : NavigationRoute("booking")
+    data class Booking(
+        val lodgeId: String,
+        val roomCategoryId: String,
+        val checkIn: String,
+        val checkOut: String,
+        val guests: Int,
+        val rooms: Int
+    ) : NavigationRoute("booking/$lodgeId/$roomCategoryId/$checkIn/$checkOut/$guests/$rooms")
     data class Payment(val bookingId: String) : NavigationRoute("payment/$bookingId")
     data class BookingConfirmation(val bookingId: String) : NavigationRoute("booking-confirmation/$bookingId")
 

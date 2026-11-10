@@ -47,7 +47,7 @@ const bookingSchema = new mongoose.Schema(
       },
       total: {
         type: Number,
-        required: true,
+        default: 0, // Calculated in pre-save hook
       },
     },
     rooms: {
@@ -68,7 +68,7 @@ const bookingSchema = new mongoose.Schema(
     },
     nights: {
       type: Number,
-      required: true,
+      default: 1, // Calculated in pre-save hook
       min: 1,
     },
     // Pricing (snapshot at booking time)
@@ -349,9 +349,9 @@ bookingSchema.methods.cancel = async function (cancelledBy, reason, refundAmount
     refundStatus: refundAmount > 0 ? 'pending' : 'none',
   };
 
-  // Release inventory
+  // Release inventory (with fallback for standalone MongoDB)
   const RoomInventory = mongoose.model('RoomInventory');
-  await RoomInventory.releaseBooking(
+  await RoomInventory.releaseBookingUnified(
     this.lodge,
     this.roomCategory,
     this.checkInDate,

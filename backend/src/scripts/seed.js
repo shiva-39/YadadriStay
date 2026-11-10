@@ -6,7 +6,6 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const { connectDB, disconnectDB } = require('../config/database');
 
 // Import models
@@ -38,24 +37,19 @@ function calculateDistanceFromTemple(coords) {
   return Math.round(R * c * 10) / 10; // Round to 1 decimal place
 }
 
-// Generate dates for the next 90 days
+// Generate dates for the next 90 days (stored at UTC midnight)
 function generateDateRange(days = 90) {
   const dates = [];
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Set to UTC midnight
+  today.setUTCHours(0, 0, 0, 0);
 
   for (let i = 0; i < days; i++) {
     const date = new Date(today);
-    date.setDate(today.getDate() + i);
+    date.setUTCDate(today.getUTCDate() + i);
     dates.push(date);
   }
   return dates;
-}
-
-// Password hashing helper
-async function hashPassword(password) {
-  const salt = await bcrypt.genSalt(12);
-  return bcrypt.hash(password, salt);
 }
 
 async function seedSuperAdmin() {
@@ -74,7 +68,7 @@ async function seedSuperAdmin() {
   const admin = await User.create({
     phone: process.env.SUPER_ADMIN_PHONE || '9876543210',
     email: process.env.SUPER_ADMIN_EMAIL || 'admin@yadadristay.com',
-    password: await hashPassword(process.env.SUPER_ADMIN_PASSWORD || 'SecureAdminPass123!'),
+    password: process.env.SUPER_ADMIN_PASSWORD || 'SecureAdminPass123!',
     fullName: 'Yadadri Stay Super Admin',
     role: 'super_admin',
     isVerified: true,
@@ -102,7 +96,7 @@ async function seedLodgeOwner() {
   const owner = await User.create({
     phone: '9988776655',
     email: 'owner@yadadristay.com',
-    password: await hashPassword('OwnerPass123!'),
+    password: 'OwnerPass123!',
     fullName: 'Rajesh Kumar',
     role: 'lodge_owner',
     isVerified: true,
@@ -770,7 +764,7 @@ async function seedCustomer() {
   const customer = await User.create({
     phone: '9876543211',
     email: 'customer@yadadristay.com',
-    password: await hashPassword('CustomerPass123!'),
+    password: 'CustomerPass123!',
     fullName: 'Priya Sharma',
     role: 'customer',
     isVerified: true,

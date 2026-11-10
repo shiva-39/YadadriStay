@@ -117,7 +117,19 @@ fun RoomSelectionScreen(
                     onDateChange = { checkIn, checkOut ->
                         viewModel.updateDates(checkIn, checkOut)
                     },
-                    onContinueClick = { onNavigate(NavigationRoute.Booking) }
+                    onContinueClick = {
+                        val state = uiState
+                        if (state.checkInDate != null && state.checkOutDate != null && state.selectedRooms.isNotEmpty()) {
+                            onNavigate(NavigationRoute.Booking(
+                                lodgeId = lodgeId,
+                                roomCategoryId = roomCategoryId,
+                                checkIn = state.checkInDate!!,
+                                checkOut = state.checkOutDate!!,
+                                guests = state.selectedRooms.sumOf { it.features.size + 1 }, // fallback, ideally from guest picker
+                                rooms = state.selectedRooms.size
+                            ))
+                        }
+                    }
                 )
             } else if (!uiState.isLoading) {
                 ErrorState(

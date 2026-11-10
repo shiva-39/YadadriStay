@@ -86,6 +86,7 @@ const register = async (req, res) => {
         isVerified: user.isVerified,
       },
       accessToken,
+      refreshToken, // Include for mobile clients
     },
   });
 };
@@ -135,6 +136,7 @@ const login = async (req, res) => {
         language: user.language,
       },
       accessToken,
+      refreshToken, // Include for mobile clients
     },
   });
 };
@@ -181,7 +183,10 @@ const refreshToken = async (req, res) => {
     res.json({
       success: true,
       message: 'Token refreshed',
-      data: { accessToken },
+      data: {
+        accessToken,
+        refreshToken: newRefreshToken, // Include for mobile clients
+      },
     });
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {

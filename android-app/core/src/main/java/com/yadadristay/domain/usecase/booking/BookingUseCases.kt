@@ -47,10 +47,78 @@ class CreateBookingUseCase @Inject constructor(
 }
 
 class GetBookingSummaryUseCase @Inject constructor(
-    private val bookingRepository: BookingRepository
+    private val bookingRepository: BookingRepository,
+    private val lodgeRepository: com.yadadristay.domain.repository.LodgeRepository
 ) {
-    operator suspend fun invoke(): Result<BookingSummary> {
-        return Result.error(Exception("Get booking summary not implemented"))
+    operator suspend fun invoke(
+        lodgeId: String,
+        roomCategoryId: String,
+        checkIn: String,
+        checkOut: String,
+        guests: Int,
+        rooms: Int
+    ): Result<BookingSummary> {
+        return try {
+            // Fetch lodge and room category details to build summary
+            val lodgeResult = lodgeRepository.getLodgeDetail(lodgeId, checkIn, checkOut)
+            val roomCategoriesResult = lodgeRepository.getRoomCategories(lodgeId)
+
+            when {
+                lodgeResult is Result.Error -> Result.error(lodgeResult.exception)
+                roomCategoriesResult is Result.Error -> Result.error(roomCategoriesResult.exception)
+                else -> {
+                    val lodge = (lodgeResult as Result.Success).data
+                    val roomCategories = (roomCategoriesResult as Result.Success).data
+                    val roomCategory = roomCategories.find { it.id == roomCategoryId }
+
+                    if (roomCategory == null) {
+                        Result.error(Exception("Room category not found"))
+                    } else {
+                        // Calculate pricing
+                        val nights = calculateNights(checkIn, checkOut)
+                        val basePrice = roomCategory.basePrice
+                        val roomCharges = (basePrice * nights * rooms).toInt()
+                        val taxesAndFees = (roomCharges * 0.18).toInt() // 18% tax
+                        val totalAmount = roomCharges + taxesAndFees
+
+                        Result.success(BookingSummary(
+                            bookingId = "", // Not created yet
+                            lodgeName = lodge.name,
+                            lodgeLocation = "${lodge.address.city}, ${lodge.address.state}",
+                            roomCategoryName = roomCategory.name,
+                            checkInDate = checkIn,
+                            checkOutDate = checkOut,
+                            numberOfNights = nights,
+                            numberOfRooms = rooms,
+                            numberOfGuests = guests,
+                            capacityPerRoom = roomCategory.maxOccupancy,
+                            roomCharges = roomCharges,
+                            taxesAndFees = taxesAndFees,
+                            discount = 0,
+                            totalAmount = totalAmount
+                        ))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Result.error(e)
+        }
+    }
+
+    private fun calculateNights(checkIn: String, checkOut: String): Int {
+        return try {
+            val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val inDate = formatter.parse(checkIn)
+            val outDate = formatter.parse(checkOut)
+            if (inDate != null && outDate != null) {
+                val diff = outDate.time - inDate.time
+                (diff / (1000 * 60 * 60 * 24)).toInt()
+            } else {
+                1
+            }
+        } catch (e: Exception) {
+            1
+        }
     }
 }
 
